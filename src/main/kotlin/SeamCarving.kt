@@ -9,6 +9,8 @@ import kotlin.math.*
 
 class SeamCarving {
 
+    var maxEnergyValue = 0.0
+
     private fun createImage(width:Int, height:Int, name:String):BufferedImage {
 
         val bufferedImage = BufferedImage(width,height, BufferedImage.TYPE_INT_RGB);
@@ -37,6 +39,27 @@ class SeamCarving {
         return arrayOf(width,height, name)
 
     }
+
+    private fun createEnergyGrid (image: BufferedImage): Array<Array<Double>> {
+        val energyGrid = Array(image.height) {Array(image.width) {0.0} }
+
+        repeat(image.height){ y ->
+
+            val rowGrid = Array(image.width) {0.0}
+            repeat(image.width){ x ->
+                val energy = energiseRGBPredicate(x,y,image)
+                rowGrid[x] = energy
+
+                if (energy > maxEnergyValue) maxEnergyValue = energy
+            }
+
+            energyGrid[y] = rowGrid
+        }
+
+        return energyGrid
+
+    }
+
 
     val energiseRGBPredicate = {x: Int, y: Int, image: BufferedImage ->
 
@@ -103,13 +126,8 @@ class SeamCarving {
         val image = ImageIO.read(File(inputName))
         val imageToMutate = ImageIO.read(File(inputName))
 
-        var maxEnergyValue = 0.0
-        repeat(image.height){ y ->
-            repeat(image.width){ x ->
-                val energy =energiseRGBPredicate(x,y,image)
-                if (energy > maxEnergyValue) maxEnergyValue = energy
-            }
-        }
+        createEnergyGrid(image)
+
         println("max energy $maxEnergyValue" )
 
         repeat(image.height){ y ->
