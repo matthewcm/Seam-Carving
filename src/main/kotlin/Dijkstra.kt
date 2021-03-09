@@ -194,7 +194,7 @@ class Dijkstra(var grid: Array<Array<Double>>) {
         println(distanceVectors)
 
         var shortestKey: List<Int> = listOf(0,0)
-        while ( shortestKey[1] != grid[0].size - 1 ){
+        while ( shortestPathSet != distanceVectors.keys.toSet() ){
 
 
             shortestKey = findMinimumDistanceVector(distanceVectors, shortestPathSet)
