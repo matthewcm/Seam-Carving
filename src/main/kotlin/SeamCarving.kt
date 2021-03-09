@@ -73,11 +73,6 @@ class SeamCarving {
                 rgbDown= Color(image.getRGB(x  , y + 1))
             }
         }
-//
-//        println(rgbUp)
-//        print(rgbLeft)
-//        println(rgbRight)
-//        println(rgbDown)
 
         val redX = abs(rgbLeft.red - rgbRight.red)
         val redY = abs(rgbUp.red - rgbDown.red)
@@ -88,15 +83,10 @@ class SeamCarving {
         val blueX = abs(rgbLeft.blue - rgbRight.blue)
         val blueY = abs(rgbUp.blue - rgbDown.blue)
 
-//        println("$redX, $greenX, $blueX")
-//        println("$redY, $greenY, $blueY")
-
 
         val xGradient = redX.toDouble().pow(2) + greenX.toDouble().pow(2) + blueX.toDouble().pow(2)
         val yGradient = redY.toDouble().pow(2) + greenY.toDouble().pow(2) + blueY.toDouble().pow(2)
 
-//        println(xGradient)
-//        println(yGradient)
         val energy = sqrt(xGradient + yGradient)
 
         energy
@@ -125,10 +115,7 @@ class SeamCarving {
         repeat(image.height){ y ->
             repeat(image.width){ x ->
                 val energy =energiseRGBPredicate(x,y,image)
-
-//                println(energy)
                 val intensity = (255.0 * energy / maxEnergyValue)
-//                println(intensity)
                 imageToMutate.setRGB(x, y, Color(intensity.toInt(), intensity.toInt(), intensity.toInt()).rgb)
             }
         }
