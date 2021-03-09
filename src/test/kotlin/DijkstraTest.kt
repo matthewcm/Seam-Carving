@@ -88,4 +88,21 @@ internal class DijkstraTest {
                 listOf (2,2),
             ).toSet(), neighbors.toSet())
     }
+
+    @Test
+    fun shortestPathSeam() {
+
+        val grid = arrayOf(
+            arrayOf(0.0, 10.0, 25.0),
+            arrayOf(3.0, 18.0, 3.0),
+            arrayOf(2.0, 4.0, 4.0)
+        )
+
+        dk = Dijkstra(grid)
+
+        val sum = dk.shortestPathSeam()
+
+        assertEquals(listOf(listOf(0,0), listOf(0,1), listOf(0,2), listOf(0,3)), sum)
+
+    }
 }

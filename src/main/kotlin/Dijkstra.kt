@@ -3,7 +3,7 @@ package seamcarving
 import java.util.HashSet
 
 
-class Dijkstra(val grid: Array<Array<Double>>) {
+class Dijkstra(var grid: Array<Array<Double>>) {
 
     fun printGrid() {
         repeat(grid.size) { y ->
@@ -81,6 +81,7 @@ class Dijkstra(val grid: Array<Array<Double>>) {
 
         var adjacentVectors: List<List<Int>>
         if (y == 0 || y == grid.size - 1){
+            println("is imaginary")
             adjacentVectors = imaginarySeamAdjacency(x,y)
         }else {
             adjacentVectors = seamAdjacency(x,y)
@@ -149,55 +150,32 @@ class Dijkstra(val grid: Array<Array<Double>>) {
         distanceVectors.filterNot{vector ->
             shortestPathSet.contains(vector.key)
         }.forEach{ vector ->
-            if (vector.value < minDistance) {
+            if (vector.value <= minDistance) {
                 minDistance = vector.value
                 shortestKey = vector.key
             }
         }
         return shortestKey
     }
-    //    fun shortestPathSeam(){
-//        var shortestPathSet = mutableSetOf<List<Int>>()
-//        while ( shortestPathSet != distanceVectors.keys.toSet() ){
-//            findMinimumDistanceVector(distanceVectors)
-//
-//            var minDistance = Double.POSITIVE_INFINITY
-//
-//            var shortestKey: List<Int> = listOf()
-//
-//            distanceVectors.filterNot{vector ->
-//                shortestPathSet.contains(vector.key)
-//            }.forEach{ vector ->
-//                if (vector.value < minDistance) {
-//                    minDistance = vector.value
-//                    shortestKey = vector.key
-//                }
-//            }
-////            println("Next shortest = $shortestKey")
-//
-//
-//            shortestPathSet.add(shortestKey)
-////        part1()
-//            val adjacentVectors = getAdjacentVectorsVerticalSeam(shortestKey, distanceVectors)
-//
-//            updateAdjacentVectors(shortestKey, adjacentVectors, distanceVectors, shortestPathSet)
-////                println(distanceVectors)
-////                println(distanceVectors.keys)
-////                println(shortestPathSet)
-////        distanceVectors.remove(shortestKey)
-//
-//        }
-//
-//    }
-    fun shortestPathSeam(): Double? {
+
+    fun shortestPathSeam(): List<List<Int>>? {
+
+        grid = arrayOf(
+            Array(grid[0].size){0.0},
+            *grid,
+            Array(grid[0].size){0.0}
+        )
+        println(grid)
 
         var shortestPathSet = mutableSetOf<List<Int>>()
         var distanceVectors = initialiseInfiniteDistanceVectors()
 
-        while ( shortestPathSet != distanceVectors.keys.toSet() ){
+        var shortestKey: List<Int> = listOf(0,0)
+        while ( shortestKey[1] != grid[0].size - 1 ){
 
 
-            var shortestKey = findMinimumDistanceVector(distanceVectors, shortestPathSet)
+            shortestKey = findMinimumDistanceVector(distanceVectors, shortestPathSet)
+            println("shortestkey : $shortestKey")
 
             shortestPathSet.add(shortestKey)
             val adjacentVectors = getAdjacentVectorsVerticalSeam(shortestKey, distanceVectors)
@@ -205,7 +183,7 @@ class Dijkstra(val grid: Array<Array<Double>>) {
             updateAdjacentVectors(shortestKey, adjacentVectors, distanceVectors, shortestPathSet)
         }
 
-        return distanceVectors[listOf(grid.size - 1, grid[0].size - 1)]
+        return shortestPathSet.toList()
 
 
     }
