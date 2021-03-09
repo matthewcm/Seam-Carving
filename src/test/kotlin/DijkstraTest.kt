@@ -26,7 +26,7 @@ internal class DijkstraTest {
     }
 
     @Test
-    fun findShortestPathSum() {
+    fun ShortestPath() {
 
         val sum = dk.shortestPath()
 
@@ -103,6 +103,24 @@ internal class DijkstraTest {
         val sum = dk.shortestPathSeam()
 
         assertEquals(listOf(listOf(0,0), listOf(0,1), listOf(0,2), listOf(0,3)), sum)
+
+    }
+    @Test
+    fun shortestPathSequence(){
+        val grid = arrayOf(
+            arrayOf(0.0, 10.0, 25.0),
+            arrayOf(3.0, 18.0, 3.0),
+            arrayOf(2.0, 4.0, 4.0)
+        )
+
+        dk = Dijkstra(grid)
+
+        dk.shortestPathSeam()
+
+        val sequence = dk.getShortestPathSequence(listOf(2,2))
+
+        println(sequence)
+
 
     }
 }

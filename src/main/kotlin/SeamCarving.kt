@@ -40,13 +40,18 @@ class SeamCarving {
 
     }
 
-    private fun createEnergyGrid (image: BufferedImage): Array<Array<Double>> {
-        val energyGrid = Array(image.height) {Array(image.width) {0.0} }
+    fun createEnergyGrid (image: BufferedImage): Array<Array<Double>> {
 
-        repeat(image.height){ y ->
+        val width = 100
+        val height = 100
+        val energyGrid = Array(width) {Array(height) {0.0} }
 
-            val rowGrid = Array(image.width) {0.0}
-            repeat(image.width){ x ->
+//        repeat(image.height){ y ->
+            repeat(height){ y ->
+
+            val rowGrid = Array(width) {0.0}
+//            repeat(image.width){ x ->
+                repeat(width){ x ->
                 val energy = energiseRGBPredicate(x,y,image)
                 rowGrid[x] = energy
 
@@ -58,6 +63,31 @@ class SeamCarving {
 
         return energyGrid
 
+    }
+
+    fun shortestEnergySeam (inputName: String, outputName: String): List<List<Int>>? {
+
+        val image = ImageIO.read(File(inputName))
+
+        val grid = createEnergyGrid(image)
+
+        println(grid.size)
+        val dk = Dijkstra(grid)
+
+        val nodes = dk.shortestPathSeam()
+
+        val g2d: Graphics2D = image.createGraphics()
+
+        g2d.color = Color.red
+
+        nodes?.forEach{ (x,y) ->
+            g2d.drawLine(x,y,x,y)
+        }
+
+        g2d.dispose()
+
+        ImageIO.write(image, "png", File("SEAM.png") )
+        return listOf(listOf(2))
     }
 
 
@@ -171,7 +201,10 @@ fun main(args: Array<String>) {
 
 //    sc.inverseImage(inputName, outputName)
 
-    sc.energiseImage(inputName, outputName)
+//    sc.energiseImage(inputName, outputName)
+
+     sc.shortestEnergySeam(inputName, outputName)
+
 }
 
 
