@@ -39,12 +39,36 @@ class SeamCarving {
 
     }
 
+    fun inverseImage(inputName: String, outputName:String) {
+
+        val image = ImageIO.read(File(inputName))
+
+        repeat(image.height){ y ->
+            repeat(image.width){ x ->
+                val rgb = Color(image.getRGB(x,y))
+                image.setRGB(x, y, Color(255 - rgb.red, 255 - rgb.green, 255 - rgb.blue).rgb)
+            }
+        }
+
+        ImageIO.write(image, "png", File(outputName) )
+
+    }
+
 
 }
 
-fun main() {
+fun main(args: Array<String>) {
+    args.forEach(::println)
+
+    var inputName = args[args.indexOfFirst{it == "-in"} + 1]
+    var outputName = args[args.indexOfFirst{it == "-out"} + 1]
+    println(inputName)
+    println(outputName)
+
     var sc = SeamCarving()
-    sc.start()
+//    sc.start()
+
+    sc.inverseImage(inputName, outputName)
 
 }
 
