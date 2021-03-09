@@ -4,8 +4,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import java.awt.Color
 import java.awt.Graphics2D
-
-
+import kotlin.math.*
 
 
 class SeamCarving {
@@ -39,14 +38,111 @@ class SeamCarving {
 
     }
 
+    val energiseRGBPredicate = {x: Int, y: Int, image: BufferedImage ->
+
+        var rgbLeft: Color
+        var rgbRight:Color
+        var rgbUp:Color
+        var rgbDown:Color
+
+        when (x) {
+            0 -> {
+                rgbLeft = Color(image.getRGB(x , y))
+                rgbRight = Color(image.getRGB(x + 2, y))
+            }
+            image.width - 1 -> {
+                rgbLeft = Color(image.getRGB(x - 2, y))
+                rgbRight = Color(image.getRGB(x , y))
+            }
+            else -> {
+                rgbLeft = Color(image.getRGB(x - 1, y))
+                rgbRight = Color(image.getRGB(x + 1 , y))
+            }
+        }
+        when (y) {
+            0 -> {
+                rgbUp = Color(image.getRGB(x , y))
+                rgbDown= Color(image.getRGB(x , y + 2))
+            }
+            image.height - 1 -> {
+                rgbUp = Color(image.getRGB(x , y - 2))
+                rgbDown= Color(image.getRGB(x , y))
+            }
+            else -> {
+                rgbUp = Color(image.getRGB(x , y - 1))
+                rgbDown= Color(image.getRGB(x  , y + 1))
+            }
+        }
+//
+//        println(rgbUp)
+//        print(rgbLeft)
+//        println(rgbRight)
+//        println(rgbDown)
+
+        val redX = abs(rgbLeft.red - rgbRight.red)
+        val redY = abs(rgbUp.red - rgbDown.red)
+
+        val greenX = abs(rgbLeft.green - rgbRight.green)
+        val greenY = abs(rgbUp.green - rgbDown.green)
+
+        val blueX = abs(rgbLeft.blue - rgbRight.blue)
+        val blueY = abs(rgbUp.blue - rgbDown.blue)
+
+//        println("$redX, $greenX, $blueX")
+//        println("$redY, $greenY, $blueY")
+
+
+        val xGradient = redX.toDouble().pow(2) + greenX.toDouble().pow(2) + blueX.toDouble().pow(2)
+        val yGradient = redY.toDouble().pow(2) + greenY.toDouble().pow(2) + blueY.toDouble().pow(2)
+
+//        println(xGradient)
+//        println(yGradient)
+        val energy = sqrt(xGradient + yGradient)
+
+        energy
+
+    }
+
+    val inverseRGBPredicate = { x:Int, y:Int, image: BufferedImage ->
+        val rgb = Color(image.getRGB(x, y))
+        image.setRGB(x, y, Color(255 - rgb.red, 255 - rgb.green, 255 - rgb.blue).rgb)
+    }
+
+    fun energiseImage(inputName: String, outputName: String){
+
+        val image = ImageIO.read(File(inputName))
+        val imageToMutate = ImageIO.read(File(inputName))
+
+        var maxEnergyValue = 0.0
+        repeat(image.height){ y ->
+            repeat(image.width){ x ->
+                val energy =energiseRGBPredicate(x,y,image)
+                if (energy > maxEnergyValue) maxEnergyValue = energy
+            }
+        }
+        println("max energy $maxEnergyValue" )
+
+        repeat(image.height){ y ->
+            repeat(image.width){ x ->
+                val energy =energiseRGBPredicate(x,y,image)
+
+//                println(energy)
+                val intensity = (255.0 * energy / maxEnergyValue)
+//                println(intensity)
+                imageToMutate.setRGB(x, y, Color(intensity.toInt(), intensity.toInt(), intensity.toInt()).rgb)
+            }
+        }
+        ImageIO.write(imageToMutate, "png", File(outputName) )
+
+    }
+
     fun inverseImage(inputName: String, outputName:String) {
 
         val image = ImageIO.read(File(inputName))
 
         repeat(image.height){ y ->
             repeat(image.width){ x ->
-                val rgb = Color(image.getRGB(x,y))
-                image.setRGB(x, y, Color(255 - rgb.red, 255 - rgb.green, 255 - rgb.blue).rgb)
+                inverseRGBPredicate(x,y,image)
             }
         }
 
@@ -68,8 +164,9 @@ fun main(args: Array<String>) {
     var sc = SeamCarving()
 //    sc.start()
 
-    sc.inverseImage(inputName, outputName)
+//    sc.inverseImage(inputName, outputName)
 
+    sc.energiseImage(inputName, outputName)
 }
 
 
