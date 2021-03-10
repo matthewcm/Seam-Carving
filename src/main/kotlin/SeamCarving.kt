@@ -4,6 +4,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.Image
 import kotlin.math.*
 
 
@@ -95,9 +96,8 @@ class SeamCarving {
     }
 
 
-    fun shortestEnergyHorizontalSeam (inputName: String, outputName: String): List<List<Int>>? {
+    fun shortestEnergyHorizontalSeam (image: BufferedImage): List<List<Int>>? {
 
-        val image = ImageIO.read(File(inputName))
 
         val grid = createEnergyGrid(image)
         val transposedGrid = transposePredicate(grid)
@@ -117,30 +117,37 @@ class SeamCarving {
 
 
 
-        drawSeam(transposedNodes, image)
-
-
-        ImageIO.write(image, "png", File(outputName) )
-        return listOf(listOf(2))
+        return transposedNodes
     }
 
-    fun shortestEnergyVerticalSeam (inputName: String, outputName: String): List<List<Int>>? {
-
+    fun drawRedSeam(inputName: String, seamNodes: List<List<Int>>, outputName: String){
         val image = ImageIO.read(File(inputName))
+
+        drawSeam(seamNodes, image)
+
+        ImageIO.write(image, "png", File(outputName) )
+    }
+
+    fun shortestEnergyVerticalSeam (image: BufferedImage): List<List<Int>>? {
 
         val grid = createEnergyGrid(image)
         val dk = Dijkstra(grid)
 
+        println("shortest seam")
         dk.shortestPathVerticalSeam()
+        println("shortest seam done")
 
         var nodes:List<List<Int>> = dk.getShortestPathSequence(listOf(dk.grid[0].size - 1 ,dk.grid.size - 1)).toList()
-        var filteredNodes = nodes.filter{ (x,y) ->
-            !(y == 0 || y == dk.grid.size - 1)
-        }
-        drawSeam(filteredNodes, image)
 
-        ImageIO.write(image, "png", File(outputName) )
-        return listOf(listOf(2))
+        var filteredNodes =nodes.filter{ (x,y) ->
+            !(y == 0 || y == dk.grid.size - 1)
+        }.map{(x,y) ->
+            listOf(x, y- 1)
+        }
+
+        println("nodes $nodes")
+
+        return filteredNodes
     }
 
 
@@ -238,6 +245,65 @@ class SeamCarving {
 
     }
 
+    fun removeVerticalSeam(inputName: String, outputName: String){
+        val image = ImageIO.read(File(inputName))
+        val newImage = BufferedImage(image.width - 1, image.height, BufferedImage.TYPE_INT_ARGB)
+
+        val seamNodes = shortestEnergyVerticalSeam(image)!!.toList().toSet()
+
+        println(seamNodes)
+
+        var newx = 0
+        var newy = 0
+        repeat(image.height){ y ->
+            repeat(image.width){ x ->
+
+                if (!seamNodes.contains(listOf(x,y))){
+                    newImage.setRGB(newx,newy, image.getRGB(x,y))
+                    newx ++
+                }
+            }
+            newx = 0
+            newy ++
+        }
+
+        ImageIO.write(newImage, "png", File(outputName))
+    }
+    fun removeHorizontalSeam(inputName: String, outputName: String){
+        val image = ImageIO.read(File(inputName))
+        val newImage = BufferedImage(image.width , image.height - 1, BufferedImage.TYPE_INT_ARGB)
+
+        val seamNodes = shortestEnergyHorizontalSeam(image)!!.toList().toSet()
+
+        var newx = 0
+        var newy = 0
+        repeat(image.width){ x ->
+            repeat(image.height){ y ->
+
+                if (!seamNodes.contains(listOf(x,y))){
+                    newImage.setRGB(newx,newy, image.getRGB(x,y))
+                    newy ++
+                }
+            }
+            newy = 0
+            newx ++
+        }
+
+        ImageIO.write(newImage, "png", File(outputName))
+    }
+    fun removeSeams(inputName: String, outputName: String, width: Int, height: Int){
+
+        ImageIO.write(ImageIO.read(File(inputName)), "png", File(outputName) )
+
+
+        repeat(width){
+            removeVerticalSeam(outputName, outputName )
+        }
+        repeat(height){
+            removeHorizontalSeam(outputName, outputName )
+        }
+
+    }
 
 }
 
@@ -246,8 +312,12 @@ fun main(args: Array<String>) {
 
     var inputName = args[args.indexOfFirst{it == "-in"} + 1]
     var outputName = args[args.indexOfFirst{it == "-out"} + 1]
+    var width= args[args.indexOfFirst{it == "-width"} + 1].toInt()
+    var height= args[args.indexOfFirst{it == "-height"} + 1].toInt()
     println(inputName)
     println(outputName)
+    println(width)
+    println(height)
 
     var sc = SeamCarving()
 //    sc.start()
@@ -257,7 +327,7 @@ fun main(args: Array<String>) {
 //    sc.energiseImage(inputName, outputName)
 
 //     sc.shortestEnergyVerticalSeam(inputName, "SEAM.png")
-    sc.shortestEnergyHorizontalSeam(inputName, "horizontal_seam.png")
+    sc.removeSeams(inputName, outputName, width, height)
 
 }
 
