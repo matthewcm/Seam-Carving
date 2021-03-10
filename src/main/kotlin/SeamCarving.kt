@@ -84,12 +84,16 @@ class SeamCarving {
         g2d.color = Color.red
 
         nodes.forEach{ (x,y) ->
-            g2d.drawLine(x,y,x,y)
+            if (y == 0 || y == dk.grid.size - 1){
+
+            }else{
+                g2d.drawLine(x,y - 1,x,y - 1)
+            }
         }
 
         g2d.dispose()
 
-        ImageIO.write(image, "png", File("SEAM.png") )
+        ImageIO.write(image, "png", File(outputName) )
         return listOf(listOf(2))
     }
 
@@ -206,7 +210,7 @@ fun main(args: Array<String>) {
 
 //    sc.energiseImage(inputName, outputName)
 
-     sc.shortestEnergySeam(inputName, outputName)
+     sc.shortestEnergySeam(inputName, "SEAM.png")
 
 }
 
