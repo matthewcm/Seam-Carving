@@ -1,22 +1,18 @@
 package seamcarving
 
-import java.util.PriorityQueue
+import java.util.*
 
+
+class Vertex(val name: List<Int>, val energy: Double)
 
 class Dijkstra(var grid: Array<Array<Double>>) {
 
-    private var distances = PriorityQueue(grid[0].size * grid.size){
-        a:Map.Entry<List<Int>, Double> , b:Map.Entry<List<Int>,Double> ->
-        if(b.value > a.value){
-            - 1
-        }else {
-            + 1
-        }
+    private lateinit var distances: PriorityQueue<Vertex>
 
-    }
+    lateinit var distanceVectors:  Array<Array<Double>>
 
-    var distanceVectors = hashMapOf<List<Int>, Double>()
-    private var fromNode = hashMapOf<List<Int>, List<Int>>()
+    private var fromNode = hashMapOf<String, List<Int>>()
+
 
     fun printGrid() {
         repeat(grid.size) { y ->
@@ -85,62 +81,68 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             seamVerticalAdjacency(x,y)
         }
 
+        if((x > 0 && x < grid[0].size - 1) && (y < grid.size - 1 && y > 0)  ){
+            return adjacentVectors
+        }
+
         return validAdjacencyVectors(adjacentVectors)
     }
 
 
-    private fun updateAdjacentVectors(vector: Map.Entry<List<Int>, Double>, adjacentVectors: Set<List<Int>>, shortestPath: HashSet<List<Int>>) {
+    private fun updateAdjacentVectors(vector: Vertex, adjacentVectors: Set<List<Int>>) {
 
-        val ( previousKey ,previousDistance) = vector
+        val previousKey = vector.name
+        val previousDistance = vector.energy
 
         adjacentVectors
-            .stream()
             .forEach{ adjacentVector ->
-                if (!shortestPath.contains(adjacentVector)){
-                    val currentMinimumDistanceToAdjacent = previousDistance + grid[adjacentVector[1]][adjacentVector[0]]
-                    var currentValueOfAdjacent = Double.POSITIVE_INFINITY
-
-                    try {
-                        currentValueOfAdjacent = distanceVectors[adjacentVector]!!.toDouble()
-                    }catch (e:Exception){
-//                        distanceVectors[adjacentVector] = Double.POSITIVE_INFINITY
-//                        distances.add(mapOf(adjacentVector to Double.POSITIVE_INFINITY).entries.first())
-                    }
+                    val (x, y ) = adjacentVector
+                    val currentMinimumDistanceToAdjacent = previousDistance + grid[y][x]
+                    val currentValueOfAdjacent = distanceVectors[y][x]
 
                     if (currentMinimumDistanceToAdjacent < currentValueOfAdjacent){
-                        distanceVectors[adjacentVector] = currentMinimumDistanceToAdjacent
+                        distanceVectors[y][x] = currentMinimumDistanceToAdjacent
 
-                        distances.add(mapOf(adjacentVector to currentMinimumDistanceToAdjacent).entries.first())
+                        distances.add(Vertex(adjacentVector ,currentMinimumDistanceToAdjacent))
 
-                        fromNode[adjacentVector] = previousKey
+//                        println(adjacentVector.toString())
+                        fromNode["$x $y"] = previousKey
 
                     }
-                }
 
             }
 
 
     }
-    private fun initialiseInfiniteDistanceVectors():MutableMap<List<Int>, Double> {
+    private fun initialiseInfiniteDistanceVectors(): Array<Array<Double>> {
 
-        distances.add(mapOf(listOf(0,0) to 0.0).entries.first())
 
-        distanceVectors[listOf(0,0)] = 0.0
-        fromNode[listOf(0,0)] = listOf()
+        distances = PriorityQueue( grid.size){ a:Vertex , b:Vertex ->
+            if(b.energy > a.energy) - 1
+            else + 1
+        }
+
+        distances.add(Vertex(listOf(0,0), 0.0))
+
+        distanceVectors = Array(grid.size){ Array(grid[0].size ){ Double.POSITIVE_INFINITY} }
+        distanceVectors[0][0] = 0.0
+
+
+        fromNode["0 0"] = listOf()
         return distanceVectors
 
     }
 
     private fun findMinimumDistanceVector(
-    ): Map.Entry<List<Int>, Double> {
-        return distances.remove()
+    ): Vertex {
+        return distances.poll()
     }
 
     fun getShortestPathSequence( toV: List<Int>): Array<List<Int>>{
         if (toV.isEmpty() ){
             return arrayOf()
         }
-            return arrayOf( toV, *getShortestPathSequence( fromNode[toV]!!.toList()))
+            return arrayOf( toV, *getShortestPathSequence( fromNode["" + toV[0] + " " + toV[1]]!!.toList()))
 
     }
 
@@ -151,81 +153,38 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             *grid,
             Array(grid[0].size){0.0}
         )
-        val finish = listOf(grid[0].size - 1 , grid.size - 1)
-
-        val shortestPathSet = HashSet<List<Int>>()
 
         initialiseInfiniteDistanceVectors()
 
-//        println(distanceVectors)
-
-        do {
+        while (distances.isNotEmpty()){
             val shortest = findMinimumDistanceVector()
 
-            val shortestKey = shortest.key
+            val adjacentVectors = getAdjacentVectorsVerticalSeam(shortest.name)
 
-            if (shortestKey == finish){
-                return distanceVectors[finish]!!.toDouble()
-            }
+            updateAdjacentVectors(shortest, adjacentVectors)
 
-            distanceVectors.remove(shortestKey)
-
-//            println("shortest key : $shortestKey")
-
-            shortestPathSet.add(shortestKey)
-            val adjacentVectors = getAdjacentVectorsVerticalSeam(shortestKey)
-
-            updateAdjacentVectors(shortest, adjacentVectors, shortestPathSet)
+        }
 
 
-        } while ( shortest.key != finish )
-
-
-
-
-        return Double.POSITIVE_INFINITY
+        return distanceVectors[grid.size - 1][grid[0].size - 1]
 
 
     }
     fun shortestPath(): Double {
 
-        val distanceVectors = initialiseInfiniteDistanceVectors()
+        initialiseInfiniteDistanceVectors()
 
-        val finish = listOf(grid[0].size - 1 , grid.size - 1)
+        while (distances.isNotEmpty()){
+            val shortest = findMinimumDistanceVector()
 
-        val shortestPathSet = HashSet<List<Int>>()
+            val adjacentVectors = getAdjacentVectors(shortest.name)
 
+            updateAdjacentVectors(shortest, adjacentVectors)
 
-            do {
-                val shortest = findMinimumDistanceVector()
-
-
-                val shortestKey = shortest.key
-
-                if (shortestKey == finish){
-                    return distanceVectors[finish]!!.toDouble()
-                }
-                distanceVectors.remove(shortestKey)
-
-//                if (shortestPathSet.contains(shortestKey)) {
-//                    distanceVectors.remove(shortestKey)
-//                }
-
-//                println("shortest key : $shortestKey")
-
-                shortestPathSet.add(shortestKey)
-                val adjacentVectors = getAdjacentVectors(shortestKey)
-
-                updateAdjacentVectors(shortest, adjacentVectors, shortestPathSet)
+        }
 
 
-//            println(shortestPathSet)
-
-            } while ( shortest.key != finish )
-
-            return Double.POSITIVE_INFINITY
-
-
+        return distanceVectors[grid[0].size - 1][grid.size - 1]
 
 
     }
