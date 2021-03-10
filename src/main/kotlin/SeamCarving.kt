@@ -42,8 +42,8 @@ class SeamCarving {
 
     fun createEnergyGrid (image: BufferedImage): Array<Array<Double>> {
 
-        val width = 100
-        val height = 100
+        val width = image.width
+        val height = image.height
         val energyGrid = Array(width) {Array(height) {0.0} }
 
 //        repeat(image.height){ y ->
@@ -74,13 +74,16 @@ class SeamCarving {
         println(grid.size)
         val dk = Dijkstra(grid)
 
-        val nodes = dk.shortestPathSeam()
+        dk.shortestPathSeam()
+
+        var nodes:List<List<Int>> = dk.getShortestPathSequence(listOf(dk.grid[0].size - 1 ,dk.grid.size - 1)).toList()
+        println("nodes $nodes")
 
         val g2d: Graphics2D = image.createGraphics()
 
         g2d.color = Color.red
 
-        nodes?.forEach{ (x,y) ->
+        nodes.forEach{ (x,y) ->
             g2d.drawLine(x,y,x,y)
         }
 

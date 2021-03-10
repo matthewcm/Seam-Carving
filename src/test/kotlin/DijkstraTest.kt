@@ -58,34 +58,34 @@ internal class DijkstraTest {
             arrayOf(2.0, 4.0, 4.0)
         )
 
-        var distanceVectors = mutableMapOf<List<Int>, Double>()
+        var distanceVectors = mutableMapOf<String, Double>()
         repeat(grid.size) { y ->
             repeat(grid[0].size) { x ->
-                distanceVectors[listOf(x,y)] = Double.POSITIVE_INFINITY
+                distanceVectors[listOf(x,y).joinToString(" ") ] = Double.POSITIVE_INFINITY
             }
         }
 
-        var neighbors = dk.getAdjacentVectors(listOf(0,0) ,distanceVectors)
+        var neighbors = dk.getAdjacentVectors("0 0" ,distanceVectors)
 
         assertEquals(
             listOf(
-               listOf (1,0),
-               listOf (0,1),
-               listOf (1,1)
+               listOf (1,0).joinToString(" "),
+               listOf (0,1).joinToString(" "),
+               listOf (1,1).joinToString(" ")
         ), neighbors)
 
-        neighbors = dk.getAdjacentVectors(listOf(1,1) ,distanceVectors)
+        neighbors = dk.getAdjacentVectors("1 1" ,distanceVectors)
 
         assertEquals(
             listOf(
-                listOf (0,0),
-                listOf (0,1),
-                listOf (0,2),
-                listOf (1,0),
-                listOf (1,2),
-                listOf (2,0),
-                listOf (2,1),
-                listOf (2,2),
+                listOf (0,0).joinToString(" "),
+                listOf (0,1).joinToString(" "),
+                listOf (0,2).joinToString(" "),
+                listOf (1,0).joinToString(" "),
+                listOf (1,2).joinToString(" "),
+                listOf (2,0).joinToString(" "),
+                listOf (2,1).joinToString(" "),
+                listOf (2,2).joinToString(" "),
             ).toSet(), neighbors.toSet())
     }
 

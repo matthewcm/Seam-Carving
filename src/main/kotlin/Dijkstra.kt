@@ -1,11 +1,11 @@
 package seamcarving
 
-import java.util.HashSet
 
 
 class Dijkstra(var grid: Array<Array<Double>>) {
 
 //    var from = mutableMapOf<List<Int>, Double >()
+    var distanceVectors = mutableMapOf<String, Double>()
     var fromNode = mutableMapOf<List<Int>, List<Int>>()
 
     fun printGrid() {
@@ -15,9 +15,6 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             }
             println()
         }
-    }
-    fun <T> listEqualsIgnoreOrder(list1: List<T>?, list2: List<T>?): Boolean {
-        return HashSet(list1) == HashSet(list2)
     }
 
     fun fillAdjacentVectors (adjacentVectors: List<List<Int>>): List<List<Int>> {
@@ -33,45 +30,49 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             }
 
     }
-    fun seamAdjacency (x:Int, y:Int):List<List<Int>>{
+    fun seamAdjacency (x:Int, y:Int): List<String> {
         return listOf(
-            listOf(x ,    y + 1),
-            listOf(x - 1, y + 1),
-            listOf(x + 1, y + 1),
+            listOf(x ,    y + 1).joinToString(" ") ,
+            listOf(x - 1 ,    y + 1).joinToString(" ") ,
+            listOf(x  + 1 ,    y + 1).joinToString(" ") ,
         )
     }
-    fun imaginarySeamAdjacency (x:Int, y:Int):List<List<Int>>{
+    fun imaginarySeamAdjacency (x:Int, y:Int): List<String> {
         return listOf(
-            listOf(x - 1, y),
-            listOf(x + 1, y),
-            listOf(x ,    y + 1),
-            listOf(x - 1, y + 1),
-            listOf(x + 1, y + 1),
+            listOf(x - 1, y).joinToString(" "),
+            listOf(x + 1, y).joinToString(" "),
+            listOf(x ,    y + 1).joinToString(" "),
+            listOf(x - 1, y + 1).joinToString(" "),
+            listOf(x + 1, y + 1).joinToString(" "),
         )
     }
-    fun gridAdjacency(x:Int, y:Int):List<List<Int>>{
+    fun gridAdjacency(x:Int, y:Int):List<String>{
         return listOf(
-            listOf(x - 1, y),
-            listOf(x + 1, y),
-            listOf(x ,    y + 1),
-            listOf(x ,    y - 1),
-            listOf(x - 1, y + 1),
-            listOf(x + 1, y - 1),
-            listOf(x - 1, y - 1),
-            listOf(x + 1, y + 1),
+            listOf(x - 1, y).joinToString(" "),
+            listOf(x + 1, y).joinToString(" "),
+            listOf(x ,    y + 1).joinToString(" "),
+            listOf(x ,    y - 1).joinToString(" "),
+            listOf(x - 1, y + 1).joinToString(" "),
+            listOf(x + 1, y - 1).joinToString(" "),
+            listOf(x - 1, y - 1).joinToString(" "),
+            listOf(x + 1, y + 1).joinToString(" "),
         )
     }
 
-    fun getAdjacentVectors (vector: List<Int>, vectors: MutableMap<List<Int>, Double>): List<List<Int>> {
-        var (x, y) = vector
+    fun getAdjacentVectors (vector: String, vectors: MutableMap<String, Double>): List<String> {
+        val (x, y) = vector.split(" ").map { it.toInt() }
 
 
-        var adjacentVectors = gridAdjacency(x,y)
+
+        val adjacentVectors = gridAdjacency(x,y)
 
         return adjacentVectors
+            .filter{ vectors.keys.contains(it)}
             .filter{ adjacentVector ->
                 try {
-                    grid[adjacentVector[1]][adjacentVector[0]]
+                    val (vx, vy) = vector.split(" ").map { it.toInt() }
+
+                    grid[vy][vx]
                     true
                 }catch(e: Exception){
                     false
@@ -79,10 +80,13 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             }
 
     }
-    fun getAdjacentVectorsVerticalSeam (vector: List<Int>, vectors: MutableMap<List<Int>, Double>): List<List<Int>> {
-        var (x, y) = vector
+    fun getAdjacentVectorsVerticalSeam (vector: String ): List<String> {
+        val (x, y) = vector.split(" ").map { it.toInt() }
 
-        var adjacentVectors: List<List<Int>>
+
+        val adjacentVectors: List<String>
+
+
         if (y == 0 || y == grid.size - 1){
             adjacentVectors = imaginarySeamAdjacency(x,y)
         }else {
@@ -92,7 +96,10 @@ class Dijkstra(var grid: Array<Array<Double>>) {
         return adjacentVectors
             .filter{ adjacentVector ->
                 try {
-                    grid[adjacentVector[1]][adjacentVector[0]]
+                    val (vx, vy) = adjacentVector.split(" ").map { it.toInt() }
+
+
+                    grid[vy][vx]
                     true
                 }catch(e: Exception){
                     false
@@ -101,9 +108,10 @@ class Dijkstra(var grid: Array<Array<Double>>) {
 
     }
 
-    fun updateAdjacentVectors(vector: List<Int>, adjacentVectors: List<List<Int>>, vectors: MutableMap<List<Int>, Double>, shortestPath: MutableSet<List<Int>>) {
+    fun updateAdjacentVectors(vector: String, adjacentVectors: List<String> ,shortestPath: MutableSet<String>) {
 
 //        println("Adjacents: $adjacents")
+        val vectors  = distanceVectors
         adjacentVectors
             .filter{
                 vectors.contains(it)
@@ -113,8 +121,8 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             }
             .filter{ adjacentVector ->
 //                println(adjacentVector.toString())
-                val (x:Int,y:Int) = adjacentVector
-                    val currentMinimumDistanceToAdjacent = vectors[vector]!!.toDouble() + grid[y][x]
+                val (x, y) = adjacentVector.split(" ").map{it.toInt()}
+                val currentMinimumDistanceToAdjacent = vectors[vector]!!.toDouble() + grid[y][x]
                     val currentValueOfAdjacent = vectors[adjacentVector]!!.toDouble()
                 println("$adjacentVector distance from source = $currentMinimumDistanceToAdjacent")
                 println("$adjacentVector current distance = $currentValueOfAdjacent")
@@ -123,36 +131,38 @@ class Dijkstra(var grid: Array<Array<Double>>) {
             }
             .forEach{ adjacentVector ->
 //                vectors[adjacentVector] = vectors[vector]!!.toDouble() + grid[adjacentVector[1]][adjacentVector[0]]
-                val distance = vectors[vector]!!.toDouble() + grid[adjacentVector[1]][adjacentVector[0]]
+                val (x, y) = adjacentVector.split(" ").map{it.toInt()}
+                val distance = vectors[vector]!!.toDouble() + grid[y][x]
                 vectors[adjacentVector] = distance
-                fromNode[adjacentVector] = vector
+                val (vx, vy) = vector.split(" ").map{it.toInt()}
+                fromNode[listOf(x,y)] = listOf(vx,vy)
             }
 
 
     }
-    fun initialiseInfiniteDistanceVectors():MutableMap<List<Int>, Double> {
-        var distanceVectors = mutableMapOf<List<Int>, Double>()
+    fun initialiseInfiniteDistanceVectors():MutableMap<String, Double> {
+
+        distanceVectors = mutableMapOf<String, Double>()
 
         repeat(grid.size) { y ->
 
-            repeat(grid[0].size) { x ->
-                distanceVectors[listOf(x,y)] = Double.POSITIVE_INFINITY
+            repeat(grid[0].size ) { x ->
+                distanceVectors["$x $y"] = Double.POSITIVE_INFINITY
             }
         }
 
-        distanceVectors[listOf(0,0) ] = 0.0
-        fromNode[listOf(0,0) ] = listOf()
+        distanceVectors["0 0"] = 0.0
+        fromNode[listOf(0,0)] = listOf()
         return distanceVectors
 
     }
 
     fun findMinimumDistanceVector(
-        distanceVectors: MutableMap<List<Int>, Double>,
-        shortestPathSet: MutableSet<List<Int>>
-    ): List<Int> {
+        shortestPathSet: MutableSet<String>
+    ): String {
         var minDistance = Double.POSITIVE_INFINITY
 
-        var shortestKey: List<Int> = listOf()
+        var shortestKey = ""
 
         distanceVectors.filterNot{vector ->
             shortestPathSet.contains(vector.key)
@@ -162,22 +172,24 @@ class Dijkstra(var grid: Array<Array<Double>>) {
                 shortestKey = vector.key
             }
         }
+
+//        distanceVectors = distanceVectors
+//            .filter{ vector -> vector.value < minDistance }
+//            .filter{vector -> shortestPathSet.contains(vector.key)}
+//            .toMutableMap()
+//
         return shortestKey
     }
 
     fun getShortestPathSequence( toV: List<Int>): Array<List<Int>>{
-        var emptyList:List<Int> = listOf()
-
-        if (toV == emptyList){
-            return arrayOf(toV)
+        if (toV.isEmpty() ){
+            return arrayOf()
         }
-        println(fromNode)
-        println(fromNode[toV])
-            return arrayOf( *getShortestPathSequence( fromNode[toV]!!.toList()))
+            return arrayOf( toV, *getShortestPathSequence( fromNode[toV]!!.toList()))
 
     }
 
-    fun shortestPathSeam(): List<List<Int>>? {
+    fun shortestPathSeam(): List<String> {
 
         grid = arrayOf(
             Array(grid[0].size){0.0},
@@ -188,22 +200,22 @@ class Dijkstra(var grid: Array<Array<Double>>) {
 
         println(grid.size)
 
-        var shortestPathSet = mutableSetOf<List<Int>>()
-        var distanceVectors = initialiseInfiniteDistanceVectors()
+        val shortestPathSet = mutableSetOf<String>()
+        distanceVectors = initialiseInfiniteDistanceVectors()
 
         println(distanceVectors)
 
-        var shortestKey: List<Int> = listOf(0,0)
+        var shortestKey: String
         while ( shortestPathSet != distanceVectors.keys.toSet() ){
 
 
-            shortestKey = findMinimumDistanceVector(distanceVectors, shortestPathSet)
+            shortestKey = findMinimumDistanceVector( shortestPathSet)
             println("shortestkey : $shortestKey")
 
             shortestPathSet.add(shortestKey)
-            val adjacentVectors = getAdjacentVectorsVerticalSeam(shortestKey, distanceVectors)
+            val adjacentVectors = getAdjacentVectorsVerticalSeam(shortestKey)
 
-            updateAdjacentVectors(shortestKey, adjacentVectors, distanceVectors, shortestPathSet)
+            updateAdjacentVectors(shortestKey, adjacentVectors, shortestPathSet)
 //            println(shortestPathSet)
         }
 
@@ -213,15 +225,15 @@ class Dijkstra(var grid: Array<Array<Double>>) {
     }
     fun shortestPath(): Double? {
 
-        var shortestPathSet = mutableSetOf<List<Int>>()
-        var distanceVectors = initialiseInfiniteDistanceVectors()
+        val shortestPathSet = mutableSetOf<String>()
+        val distanceVectors = initialiseInfiniteDistanceVectors()
 
                 println(distanceVectors)
 
         while ( shortestPathSet != distanceVectors.keys.toSet() ){
 
 
-            var shortestKey = findMinimumDistanceVector(distanceVectors, shortestPathSet)
+            val shortestKey = findMinimumDistanceVector( shortestPathSet)
             println("Next shortest = $shortestKey")
 
             shortestPathSet.add(shortestKey)
@@ -229,7 +241,7 @@ class Dijkstra(var grid: Array<Array<Double>>) {
 
             println("Adjacencies $adjacentVectors")
 
-            updateAdjacentVectors(shortestKey, adjacentVectors, distanceVectors, shortestPathSet)
+            updateAdjacentVectors(shortestKey, adjacentVectors, shortestPathSet)
                 println(distanceVectors)
 //                println(distanceVectors.keys)
 //                println(shortestPathSet)
@@ -241,7 +253,8 @@ class Dijkstra(var grid: Array<Array<Double>>) {
 
 //        println(shortestPathSet)
 //        return distanceVectorsj
-        return distanceVectors[listOf(grid.size - 1, grid[0].size - 1)]
+
+        return distanceVectors[listOf(grid.size - 1, grid[0].size - 1).joinToString(" ")]
 
 
     }
