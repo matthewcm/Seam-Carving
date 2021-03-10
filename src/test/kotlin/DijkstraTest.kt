@@ -64,8 +64,9 @@ internal class DijkstraTest {
                 distanceVectors[listOf(x,y).joinToString(" ") ] = Double.POSITIVE_INFINITY
             }
         }
+        dk.distanceVectors = distanceVectors
 
-        var neighbors = dk.getAdjacentVectors("0 0" ,distanceVectors)
+        var neighbors = dk.getAdjacentVectors("0 0" )
 
         assertEquals(
             listOf(
@@ -74,7 +75,7 @@ internal class DijkstraTest {
                listOf (1,1).joinToString(" ")
         ), neighbors)
 
-        neighbors = dk.getAdjacentVectors("1 1" ,distanceVectors)
+        neighbors = dk.getAdjacentVectors("1 1" )
 
         assertEquals(
             listOf(
