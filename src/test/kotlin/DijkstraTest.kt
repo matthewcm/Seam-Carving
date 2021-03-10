@@ -101,7 +101,7 @@ internal class DijkstraTest {
 
         dk = Dijkstra(grid)
 
-        val sum = dk.shortestPathSeam()
+        val sum = dk.shortestPathVerticalSeam()
 
 
     }
@@ -115,7 +115,7 @@ internal class DijkstraTest {
 
         dk = Dijkstra(grid)
 
-        println(dk.shortestPathSeam())
+        println(dk.shortestPathVerticalSeam())
 
         val sequence = dk.getShortestPathSequence(listOf(2,4))
 

@@ -62,31 +62,82 @@ class SeamCarving {
         return energyGrid
 
     }
-
-    fun shortestEnergySeam (inputName: String, outputName: String): List<List<Int>>? {
-
-        val image = ImageIO.read(File(inputName))
-
-        val grid = createEnergyGrid(image)
-
-        println(grid.size)
-        val dk = Dijkstra(grid)
-
-        dk.shortestPathSeam()
-
-        var nodes:List<List<Int>> = dk.getShortestPathSequence(listOf(dk.grid[0].size - 1 ,dk.grid.size - 1)).toList()
-        println("nodes $nodes")
+    fun drawSeam(nodes:List<List<Int>>, image:BufferedImage) {
+        println("sorted nodes $nodes")
 
         val g2d: Graphics2D = image.createGraphics()
 
         g2d.color = Color.red
 
         nodes.forEach { (x, y) ->
-            if (!(y == 0 || y == dk.grid.size - 1)) g2d.drawLine(x, y - 1, x, y - 1)
+            g2d.drawLine(x, y , x, y)
         }
 
 
         g2d.dispose()
+
+    }
+
+    var transposePredicate = { matrix: Array<Array<Double>> ->
+        val transposedGrid = Array(matrix[0].size) { Array(matrix.size) { 0.0 } }
+
+        for (i in transposedGrid.indices) {
+            for (j in transposedGrid[i].indices) {
+                transposedGrid[i][j] = matrix[j][i]
+            }
+        }
+        transposedGrid
+    }
+    var transposeNodes = {nodes: List<List<Int>> ->
+        nodes.map { (x,y)->
+            listOf(y,x)
+        }
+    }
+
+
+    fun shortestEnergyHorizontalSeam (inputName: String, outputName: String): List<List<Int>>? {
+
+        val image = ImageIO.read(File(inputName))
+
+        val grid = createEnergyGrid(image)
+        val transposedGrid = transposePredicate(grid)
+
+        val dk = Dijkstra(transposedGrid)
+
+        dk.shortestPathVerticalSeam()
+
+        var nodes:List<List<Int>> = dk.getShortestPathSequence(listOf(dk.grid[0].size - 1 ,dk.grid.size - 1)).toList()
+
+        println("nodes $nodes")
+        var transposedNodes = transposeNodes(nodes.filter{ (x,y) ->
+            !(y == 0 || y == dk.grid.size - 1)
+        }.map{(x,y) ->
+            listOf(x, y- 1)
+        })
+
+
+
+        drawSeam(transposedNodes, image)
+
+
+        ImageIO.write(image, "png", File(outputName) )
+        return listOf(listOf(2))
+    }
+
+    fun shortestEnergyVerticalSeam (inputName: String, outputName: String): List<List<Int>>? {
+
+        val image = ImageIO.read(File(inputName))
+
+        val grid = createEnergyGrid(image)
+        val dk = Dijkstra(grid)
+
+        dk.shortestPathVerticalSeam()
+
+        var nodes:List<List<Int>> = dk.getShortestPathSequence(listOf(dk.grid[0].size - 1 ,dk.grid.size - 1)).toList()
+        var filteredNodes = nodes.filter{ (x,y) ->
+            !(y == 0 || y == dk.grid.size - 1)
+        }
+        drawSeam(filteredNodes, image)
 
         ImageIO.write(image, "png", File(outputName) )
         return listOf(listOf(2))
@@ -205,7 +256,8 @@ fun main(args: Array<String>) {
 
 //    sc.energiseImage(inputName, outputName)
 
-     sc.shortestEnergySeam(inputName, "SEAM.png")
+//     sc.shortestEnergyVerticalSeam(inputName, "SEAM.png")
+    sc.shortestEnergyHorizontalSeam(inputName, "horizontal_seam.png")
 
 }
 

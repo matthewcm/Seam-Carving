@@ -41,14 +41,14 @@ class Dijkstra(var grid: Array<Array<Double>>) {
                 }
             }
     }
-    private fun seamAdjacency (x:Int, y:Int): List<String> {
+    private fun seamVerticalAdjacency (x:Int, y:Int): List<String> {
         return listOf(
             listOf(x ,    y + 1).joinToString(" ") ,
             listOf(x - 1 ,    y + 1).joinToString(" ") ,
             listOf(x  + 1 ,    y + 1).joinToString(" ") ,
         )
     }
-    private fun imaginarySeamAdjacency (x:Int, y:Int): List<String> {
+    private fun imaginaryVerticalSeamAdjacency (x:Int, y:Int): List<String> {
         return listOf(
             listOf(x - 1, y).joinToString(" "),
             listOf(x + 1, y).joinToString(" "),
@@ -82,9 +82,9 @@ class Dijkstra(var grid: Array<Array<Double>>) {
         val (x, y) = vector.split(" ").map { it.toInt() }
 
         val adjacentVectors: List<String> = if (y == 0 || y == grid.size - 1){
-            imaginarySeamAdjacency(x,y)
+            imaginaryVerticalSeamAdjacency(x,y)
         }else {
-            seamAdjacency(x,y)
+            seamVerticalAdjacency(x,y)
         }
 
         return validAdjacencyVectors(adjacentVectors)
@@ -144,7 +144,7 @@ class Dijkstra(var grid: Array<Array<Double>>) {
 
     }
 
-    fun shortestPathSeam(): Double{
+    fun shortestPathVerticalSeam(): Double{
 
         grid = arrayOf(
             Array(grid[0].size){0.0},
