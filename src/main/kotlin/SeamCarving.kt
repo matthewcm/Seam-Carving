@@ -44,13 +44,11 @@ class SeamCarving {
 
         val width = image.width
         val height = image.height
-        val energyGrid = Array(width) {Array(height) {0.0} }
+        val energyGrid = Array(height) {Array(width) {0.0} }
 
-//        repeat(image.height){ y ->
             repeat(height){ y ->
 
             val rowGrid = Array(width) {0.0}
-//            repeat(image.width){ x ->
                 repeat(width){ x ->
                 val energy = energiseRGBPredicate(x,y,image)
                 rowGrid[x] = energy
@@ -83,13 +81,10 @@ class SeamCarving {
 
         g2d.color = Color.red
 
-        nodes.forEach{ (x,y) ->
-            if (y == 0 || y == dk.grid.size - 1){
-
-            }else{
-                g2d.drawLine(x,y - 1,x,y - 1)
-            }
+        nodes.forEach { (x, y) ->
+            if (!(y == 0 || y == dk.grid.size - 1)) g2d.drawLine(x, y - 1, x, y - 1)
         }
+
 
         g2d.dispose()
 
